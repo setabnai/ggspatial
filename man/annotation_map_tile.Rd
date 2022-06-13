@@ -20,7 +20,8 @@ annotation_map_tile(
   interpolate = TRUE,
   data = NULL,
   mapping = NULL,
-  alpha = 1
+  alpha = 1,
+  grayscale = FALSE
 )
 
 GeomMapTile
@@ -47,6 +48,10 @@ increase the resolution.}
 \item{data, mapping}{Specify data and mapping to use this geom with facets}
 
 \item{alpha}{Use to make this layer semi-transparent}
+
+\item{grayscale}{(logical) \code{TRUE} to convert rasters to grayscale (luma601,
+see:
+\url{https://en.wikipedia.org/wiki/Grayscale#Converting_colour_to_grayscale})}
 }
 \value{
 A ggplot2 layer

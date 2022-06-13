@@ -18,6 +18,9 @@
 #' @param interpolate Passed to [grid::rasterGrob()]
 #' @param alpha Use to make this layer semi-transparent
 #' @param data,mapping Specify data and mapping to use this geom with facets
+#' @param grayscale (logical) `TRUE` to convert rasters to grayscale (luma601,
+#'   see:
+#'   \url{https://en.wikipedia.org/wiki/Grayscale#Converting_colour_to_grayscale})
 #'
 #' @return A ggplot2 layer
 #' @export
@@ -33,7 +36,8 @@
 annotation_map_tile <- function(type = "osm", zoom = NULL, zoomin = -2,
                                 forcedownload = FALSE, cachedir = NULL,
                                 progress = c("text", "none"), quiet = TRUE,
-                                interpolate = TRUE, data = NULL, mapping = NULL, alpha = 1) {
+                                interpolate = TRUE, data = NULL, mapping = NULL,
+                                alpha = 1, grayscale = FALSE) {
 
   progress <- match.arg(progress)
   if(!is.null(zoom)) {
@@ -63,7 +67,8 @@ annotation_map_tile <- function(type = "osm", zoom = NULL, zoomin = -2,
         progress = progress,
         quiet = quiet,
         interpolate = interpolate,
-        alpha = alpha
+        alpha = alpha,
+        grayscale = grayscale
       ),
       inherit.aes = FALSE,
       show.legend = FALSE
@@ -99,7 +104,8 @@ GeomMapTile <- ggplot2::ggproto(
   draw_panel = function(
     data, panel_params, coordinates,
     forcedownload = FALSE, cachedir = NULL,
-    progress = c("none", "text"), quiet = TRUE, interpolate = TRUE, alpha = 1
+    progress = c("none", "text"), quiet = TRUE, interpolate = TRUE, alpha = 1,
+    grayscale = FALSE
   ) {
     progress <- match.arg(progress)
 
@@ -197,6 +203,16 @@ GeomMapTile <- ggplot2::ggproto(
         # bind it to the original raster
         img <- abind::abind(img[, , 1:3, drop = FALSE], tband)
       }
+    }
+
+    # Convert to grayscale
+    #
+    # ref: https://en.wikipedia.org/wiki/Grayscale#Converting_color_to_grayscale
+
+    if (grayscale) {
+      b <- c(0.2126, 0.7152, 0.0722)
+      y <- apply(img, c(1, 2), function(x){x[1:3] %*% b})
+      img[, , 1:3] <- y
     }
 
     # transform corners to viewport cs

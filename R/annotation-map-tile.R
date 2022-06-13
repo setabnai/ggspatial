@@ -205,6 +205,81 @@ GeomMapTile <- ggplot2::ggproto(
       }
     }
 
+    # Brightness and contrast
+    #
+    # Hardcoded for now
+    # b: -255:255
+    # The value of brightness will usually be in the range of -255 to +255 for a
+    # 24 bit palette. Negative values will darken the image and, conversely,
+    # positive values will brighten the image.
+    # c: -100,100
+    # The value of contrast will be in the range of -100 to +100 Negative
+    # values will decrease the amount of contrast and conversely positive values
+    # will increase the amount of contrast.
+    #
+    # source: https://github.com/qgis/QGIS/blob/005a0ad0937b24e5a999a2962f473c2fc88032a2/src/core/raster/qgsbrightnesscontrastfilter.cpp
+    #
+
+    #' adjust image for contrast, brightness and gamma
+    #'
+    #' Taken from QGIS raster code
+    #'
+    #' @param img (raster)
+    #' @param a (numeric) alpha component ... per-pixel ... ignored
+    #' @param pb (numeric) brightness, [-255 to 255]
+    #' @param pc (numeric) contrast, [-100 to 100]
+    #' @param pg (numeric) gamma, [-0.1 to 10]
+    #'
+    #' @return (raster) adjusted img
+    #'
+    adjustColorComponents <- function(img, a = 1, bv = 0, cv = 0, gv = 1) {
+      cf <- ((cv + 100.0) / 100.0) ^ 2 # [0, 4]
+      gf <- 1.0 / gv # [-10, 0.1]
+      bf <- bv / 255.0
+      apply(img, c(1, 2), adjustColorComponent, a = a, bf = bf, cf = cf, gf = gf)
+    }
+
+    #' adjust image for contrast, brightness and gamma
+    #'
+    #' Taken from QGIS raster code
+    #'
+    #' @param rgb (numeric, possible vector)
+    #' @param a (numeric) alpha component ... per-pixel ... ignored
+    #' @param b (numeric) brightness, [-1 to 1]
+    #' @param cf (numeric) contrast factor, [0 to 4]
+    #' @param g (numeric) gamma factor, [-10 to 0.1]
+    #'
+    #' @return (raster) adjusted img
+    #'
+    adjustColorComponent <- function(rgb, a = 1, bf = 0, cf = 1, gf = 1) {
+
+      if (cf != 1)
+        rgb <- ((rgb - 0.5) * cf) + 0.5
+
+      if (pb != 0)
+        rgb <- rgb + bf
+
+      if (gf != 1)
+        rgb <- rgb ^ gf
+
+      rgb <- clamp(rgb, 0, 1)
+
+      rgb
+    }
+
+    #browser()
+
+    pb <- c(0, 32, 48, 64, 96, 128)[4] # [-255, 255]
+    pc <- c(0, -20, -33, -50)[3] # [-100, 100]
+    pg <- 1 # [0.1, 10]
+
+    cf <- ((pc + 100.0) / 100.0) ^ 2
+    gf <- 1.0 / pg
+
+    # brightness and contrast
+    y2 <- apply(img[, , 1:3], 3, adjustColorComponent, pb = pb, cf = cf, gf = gf)
+    img[, , 1:3] <- array(y2, dim = c(512, 512, 3))
+
     # Convert to grayscale
     #
     # ref: https://en.wikipedia.org/wiki/Grayscale#Converting_color_to_grayscale
@@ -230,6 +305,7 @@ GeomMapTile <- ggplot2::ggproto(
   }
 )
 
+
 # the CMD check doesn't detect the call to
 # rosm in the ggproto object and complains
 rosm_image <- function(...) {
@@ -238,4 +314,15 @@ rosm_image <- function(...) {
 
 rosm_raster <- function(...) {
   rosm::osm.raster(...)
+}
+
+clamp <- function(x, lower, upper) {
+  #x <- pmax(x, lower)
+  #x <- pmin(x, upper)
+  pmin(pmax(x, lower), upper)
+
+  x[x > upper] <- upper
+  x[x < lower] <- lower
+
+  x
 }

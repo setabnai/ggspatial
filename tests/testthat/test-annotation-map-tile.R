@@ -121,6 +121,32 @@ if (identical(Sys.getenv("NOT_CRAN"), "true")) {
     )
 
     expect_doppelganger_extra(
+      "rgb tile with brightness",
+      p +
+        annotation_map_tile(brightness = 32)
+    )
+    expect_doppelganger_extra(
+      "rgb tile with contrast",
+      p +
+        annotation_map_tile(contrast = -25)
+    )
+    expect_doppelganger_extra(
+      "rgb tile with gamma",
+      p +
+        annotation_map_tile(gamma = 2)
+    )
+    expect_doppelganger_extra(
+      "rgb tile with brightness, contrast and gamma",
+      p +
+        annotation_map_tile(brightness = 32, contrast = -25, gamma = 2)
+    )
+    expect_doppelganger_extra(
+      "rgb tile with alpha, brightness, contrast and gamma",
+      p +
+        annotation_map_tile(alpha = 0.5, brightness = 32, contrast = -25, gamma = 2)
+    )
+
+    expect_doppelganger_extra(
       "rgb tile with grayscale",
       p +
         annotation_map_tile(grayscale = TRUE)
@@ -131,6 +157,13 @@ if (identical(Sys.getenv("NOT_CRAN"), "true")) {
         annotation_map_tile(grayscale = TRUE, alpha = 0.5)
     )
 
+    expect_doppelganger_extra(
+      "rgb tile with grayscale, alpha, brightness, contrast and gamma",
+      p +
+        annotation_map_tile(
+          alpha = 0.5, brightness = 32, contrast = -25, gamma = 2, grayscale = TRUE
+        )
+    )
 
   })
 

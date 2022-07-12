@@ -20,6 +20,9 @@ annotation_map_tile(
   interpolate = TRUE,
   data = NULL,
   mapping = NULL,
+  brightness = 0,
+  contrast = 0,
+  gamma = 1,
   alpha = 1
 )
 
@@ -45,6 +48,12 @@ increase the resolution.}
 \item{interpolate}{Passed to \code{\link[grid:grid.raster]{grid::rasterGrob()}}}
 
 \item{data, mapping}{Specify data and mapping to use this geom with facets}
+
+\item{brightness}{(numeric) \link{-255 to 255}, negative darkens, positive lightens}
+
+\item{contrast}{(numeric) \link{-100 to 100}, negative reduces, positive increases}
+
+\item{gamma}{(numeric) \link{0.1 to 10}, 1 is identity}
 
 \item{alpha}{Use to make this layer semi-transparent}
 }

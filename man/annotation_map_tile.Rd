@@ -21,6 +21,9 @@ annotation_map_tile(
   data = NULL,
   mapping = NULL,
   alpha = 1,
+  brightness = 0,
+  contrast = 0,
+  gamma = 1,
   grayscale = FALSE
 )
 
@@ -49,9 +52,13 @@ increase the resolution.}
 
 \item{alpha}{Use to make this layer semi-transparent}
 
-\item{grayscale}{(logical) \code{TRUE} to convert rasters to grayscale (luma601,
-see:
-\url{https://en.wikipedia.org/wiki/Grayscale#Converting_colour_to_grayscale})}
+\item{brightness}{(numeric) \link{-255 to 255}, negative darkens, positive lightens}
+
+\item{contrast}{(numeric) \link{-100 to 100}, negative reduces, positive increases}
+
+\item{gamma}{(numeric) \link{0.1 to 10}, 1 is identity}
+
+\item{grayscale}{(logical) \code{TRUE} to convert rasters to grayscale (luma601)}
 }
 \value{
 A ggplot2 layer

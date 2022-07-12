@@ -22,6 +22,7 @@
 #' @param contrast (numeric) [-100 to 100], negative reduces, positive increases
 #' @param gamma (numeric) [0.1 to 10], 1 is identity
 #' @param grayscale (logical) `TRUE` to convert rasters to grayscale (luma601)
+#' @param invert (logical) `TRUE` to invert colours
 #'
 #' @return A ggplot2 layer
 #' @export
@@ -42,7 +43,8 @@ annotation_map_tile <- function(type = "osm", zoom = NULL, zoomin = -2,
                                 interpolate = TRUE, data = NULL, mapping = NULL,
                                 alpha = 1,
                                 brightness = 0, contrast = 0, gamma = 1,
-                                grayscale = FALSE) {
+                                grayscale = FALSE,
+                                invert = TRUE) {
 
   progress <- match.arg(progress)
   if(!is.null(zoom)) {
@@ -76,7 +78,8 @@ annotation_map_tile <- function(type = "osm", zoom = NULL, zoomin = -2,
         brightness = brightness,
         contrast = contrast,
         gamma = gamma,
-        grayscale = grayscale
+        grayscale = grayscale,
+        invert = invert
       ),
       inherit.aes = FALSE,
       show.legend = FALSE
@@ -114,7 +117,8 @@ GeomMapTile <- ggplot2::ggproto(
     forcedownload = FALSE, cachedir = NULL,
     progress = c("none", "text"), quiet = TRUE, interpolate = TRUE, alpha = 1,
     brightness = 0, contrast = 0, gamma = 1,
-    grayscale = FALSE
+    grayscale = FALSE,
+    invert = TRUE
   ) {
     progress <- match.arg(progress)
 
@@ -246,6 +250,12 @@ GeomMapTile <- ggplot2::ggproto(
         gamma_factor = 1.0 / gamma
       )
       img[, , 1:3] <- array(y2, dim = c(dim(img)[c(1, 2)], 3))
+    }
+
+    # invert colours
+
+    if (invert) {
+      img[, , 1:3] <- 1 - img[, , 1:3]
     }
 
     # Convert to grayscale

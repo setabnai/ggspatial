@@ -24,7 +24,8 @@ annotation_map_tile(
   brightness = 0,
   contrast = 0,
   gamma = 1,
-  grayscale = FALSE
+  grayscale = FALSE,
+  invert = TRUE
 )
 
 GeomMapTile
@@ -59,6 +60,8 @@ increase the resolution.}
 \item{gamma}{(numeric) \link{0.1 to 10}, 1 is identity}
 
 \item{grayscale}{(logical) \code{TRUE} to convert rasters to grayscale (luma601)}
+
+\item{invert}{(logical) \code{TRUE} to invert colours}
 }
 \value{
 A ggplot2 layer

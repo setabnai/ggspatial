@@ -159,6 +159,38 @@ if (identical(Sys.getenv("NOT_CRAN"), "true")) {
         annotation_map_tile(grayscale = TRUE, alpha = 0.5)
     )
 
+    expect_doppelganger_extra(
+      "rgb tile with grayscale, alpha, brightness, contrast and gamma",
+      p +
+        annotation_map_tile(
+          alpha = 0.5, brightness = 32, contrast = -25, gamma = 2, grayscale = TRUE
+        )
+    )
+
+    # invert
+
+    expect_doppelganger_extra(
+      "rgb tile with invert",
+      p +
+        annotation_map_tile(invert = TRUE)
+    )
+    expect_doppelganger_extra(
+      "rgb tile with grayscale and invert",
+      p +
+        annotation_map_tile(grayscale = TRUE, invert = TRUE)
+    )
+
+    expect_doppelganger_extra(
+      "rgb tile with grayscale, alpha, brightness, contrast and gamma and invert",
+      p +
+        annotation_map_tile(
+          alpha = 0.8
+          , brightness = 32, contrast = 25, gamma = 0.1
+          , grayscale = TRUE, invert = TRUE
+        )
+    )
+
+>>>>>>> 30c28fe ([R, tests] annotation-map-tile: add invert option)
   })
 
   test_that("annotation_map_tile() does not fail when handed a single point", {

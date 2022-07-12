@@ -120,6 +120,18 @@ if (identical(Sys.getenv("NOT_CRAN"), "true")) {
         coord_sf(crs = 26910)
     )
 
+    expect_doppelganger_extra(
+      "rgb tile with grayscale",
+      p +
+        annotation_map_tile(grayscale = TRUE)
+    )
+    expect_doppelganger_extra(
+      "rgb tile with grayscale and alpha",
+      p +
+        annotation_map_tile(grayscale = TRUE, alpha = 0.5)
+    )
+
+
   })
 
   test_that("annotation_map_tile() does not fail when handed a single point", {

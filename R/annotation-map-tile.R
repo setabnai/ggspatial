@@ -18,9 +18,7 @@
 #' @param interpolate Passed to [grid::rasterGrob()]
 #' @param alpha Use to make this layer semi-transparent
 #' @param data,mapping Specify data and mapping to use this geom with facets
-#' @param grayscale (logical) `TRUE` to convert rasters to grayscale (luma601,
-#'   see:
-#'   \url{https://en.wikipedia.org/wiki/Grayscale#Converting_colour_to_grayscale})
+#' @param grayscale (logical) `TRUE` to convert rasters to grayscale (luma601)
 #'
 #' @return A ggplot2 layer
 #' @export

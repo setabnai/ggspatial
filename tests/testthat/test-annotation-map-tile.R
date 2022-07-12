@@ -19,20 +19,6 @@ if (identical(Sys.getenv("NOT_CRAN"), "true")) {
 
     expect_message(
       expect_doppelganger_extra(
-        "default EPSG grayscale",
-        ggplot() +
-          annotation_map_tile(
-            zoom = 13
-            , cachedir = system.file("rosm.cache", package = "ggspatial")
-            , grayscale = TRUE
-          ) +
-          geom_sf(data = longlake_waterdf, fill = NA, col = "grey50")
-      ),
-      "Zoom: 13"
-    )
-
-    expect_message(
-      expect_doppelganger_extra(
         "non-default EPSG",
         ggplot() +
           annotation_map_tile(zoom = 13, cachedir = system.file("rosm.cache", package = "ggspatial")) +
@@ -133,6 +119,18 @@ if (identical(Sys.getenv("NOT_CRAN"), "true")) {
         annotation_map_tile(alpha = 0.5) +
         coord_sf(crs = 26910)
     )
+
+    expect_doppelganger_extra(
+      "rgb tile with grayscale",
+      p +
+        annotation_map_tile(grayscale = TRUE)
+    )
+    expect_doppelganger_extra(
+      "rgb tile with grayscale and alpha",
+      p +
+        annotation_map_tile(grayscale = TRUE, alpha = 0.5)
+    )
+
 
   })
 

@@ -18,6 +18,9 @@
 #' @param interpolate Passed to [grid::rasterGrob()]
 #' @param alpha Use to make this layer semi-transparent
 #' @param data,mapping Specify data and mapping to use this geom with facets
+#' @param brightness (numeric) [-255 to 255], negative darkens, positive lightens
+#' @param contrast (numeric) [-100 to 100], negative reduces, positive increases
+#' @param gamma (numeric) [0.1 to 10], 1 is identity
 #' @param grayscale (logical) `TRUE` to convert rasters to grayscale (luma601)
 #'
 #' @return A ggplot2 layer
@@ -37,7 +40,9 @@ annotation_map_tile <- function(type = "osm", zoom = NULL, zoomin = -2,
                                 forcedownload = FALSE, cachedir = NULL,
                                 progress = c("text", "none"), quiet = TRUE,
                                 interpolate = TRUE, data = NULL, mapping = NULL,
-                                alpha = 1, grayscale = FALSE) {
+                                alpha = 1,
+                                brightness = 0, contrast = 0, gamma = 1,
+                                grayscale = FALSE) {
 
   progress <- match.arg(progress)
   if(!is.null(zoom)) {
@@ -68,6 +73,9 @@ annotation_map_tile <- function(type = "osm", zoom = NULL, zoomin = -2,
         quiet = quiet,
         interpolate = interpolate,
         alpha = alpha,
+        brightness = brightness,
+        contrast = contrast,
+        gamma = gamma,
         grayscale = grayscale
       ),
       inherit.aes = FALSE,
@@ -105,6 +113,7 @@ GeomMapTile <- ggplot2::ggproto(
     data, panel_params, coordinates,
     forcedownload = FALSE, cachedir = NULL,
     progress = c("none", "text"), quiet = TRUE, interpolate = TRUE, alpha = 1,
+    brightness = 0, contrast = 0, gamma = 1,
     grayscale = FALSE
   ) {
     progress <- match.arg(progress)
@@ -205,80 +214,39 @@ GeomMapTile <- ggplot2::ggproto(
       }
     }
 
-    # Brightness and contrast
+    # Brightness, Ccontrast and Gamma
     #
-    # Hardcoded for now
-    # b: -255:255
+    #
+    # brightness_value: -255:255
+    #
     # The value of brightness will usually be in the range of -255 to +255 for a
-    # 24 bit palette. Negative values will darken the image and, conversely,
-    # positive values will brighten the image.
-    # c: -100,100
-    # The value of contrast will be in the range of -100 to +100 Negative
-    # values will decrease the amount of contrast and conversely positive values
-    # will increase the amount of contrast.
+    # 24 bit palette.
     #
-    # source: https://github.com/qgis/QGIS/blob/005a0ad0937b24e5a999a2962f473c2fc88032a2/src/core/raster/qgsbrightnesscontrastfilter.cpp
+    # Negative values will darken the image and, conversely, positive values
+    # will brighten the image.
     #
-
-    #' adjust image for contrast, brightness and gamma
-    #'
-    #' Taken from QGIS raster code
-    #'
-    #' @param img (raster)
-    #' @param a (numeric) alpha component ... per-pixel ... ignored
-    #' @param pb (numeric) brightness, [-255 to 255]
-    #' @param pc (numeric) contrast, [-100 to 100]
-    #' @param pg (numeric) gamma, [-0.1 to 10]
-    #'
-    #' @return (raster) adjusted img
-    #'
-    adjustColorComponents <- function(img, a = 1, bv = 0, cv = 0, gv = 1) {
-      cf <- ((cv + 100.0) / 100.0) ^ 2 # [0, 4]
-      gf <- 1.0 / gv # [-10, 0.1]
-      bf <- bv / 255.0
-      apply(img, c(1, 2), adjustColorComponent, a = a, bf = bf, cf = cf, gf = gf)
-    }
-
-    #' adjust image for contrast, brightness and gamma
-    #'
-    #' Taken from QGIS raster code
-    #'
-    #' @param rgb (numeric, possible vector)
-    #' @param a (numeric) alpha component ... per-pixel ... ignored
-    #' @param b (numeric) brightness, [-1 to 1]
-    #' @param cf (numeric) contrast factor, [0 to 4]
-    #' @param g (numeric) gamma factor, [-10 to 0.1]
-    #'
-    #' @return (raster) adjusted img
-    #'
-    adjustColorComponent <- function(rgb, a = 1, bf = 0, cf = 1, gf = 1) {
-
-      if (cf != 1)
-        rgb <- ((rgb - 0.5) * cf) + 0.5
-
-      if (pb != 0)
-        rgb <- rgb + bf
-
-      if (gf != 1)
-        rgb <- rgb ^ gf
-
-      rgb <- clamp(rgb, 0, 1)
-
-      rgb
-    }
+    #
+    # contrast_value: -100,100
+    #
+    # The value of contrast will be in the range of -100 to +100
+    #
+    # Negative values will decrease the amount of contrast and conversely
+    # positive values will increase the amount of contrast.
+    #
 
     #browser()
 
-    pb <- c(0, 32, 48, 64, 96, 128)[4] # [-255, 255]
-    pc <- c(0, -20, -33, -50)[3] # [-100, 100]
-    pg <- 1 # [0.1, 10]
-
-    cf <- ((pc + 100.0) / 100.0) ^ 2
-    gf <- 1.0 / pg
-
-    # brightness and contrast
-    y2 <- apply(img[, , 1:3], 3, adjustColorComponent, pb = pb, cf = cf, gf = gf)
-    img[, , 1:3] <- array(y2, dim = c(512, 512, 3))
+    # apply brightness, contrast and gamma
+    if (!(brightness == 0 && contrast == 0 && gamma == 1)) {
+      y2 <- apply(
+        img[, , 1:3], 3,
+        adjustColorComponent,
+        brightness_value = brightness / 255.0,
+        contrast_factor = ((contrast + 100.0) / 100.0) ^ 2,
+        gamma_factor = 1.0 / gamma
+      )
+      img[, , 1:3] <- array(y2, dim = c(dim(img)[c(1, 2)], 3))
+    }
 
     # Convert to grayscale
     #
@@ -316,13 +284,103 @@ rosm_raster <- function(...) {
   rosm::osm.raster(...)
 }
 
-clamp <- function(x, lower, upper) {
-  #x <- pmax(x, lower)
-  #x <- pmin(x, upper)
-  pmin(pmax(x, lower), upper)
 
+#' keep values between limits
+#'
+#' ... and set NAs to 0
+#'
+#' @param x (numeric vector)
+#' @param lower (numeric)
+#' @param upper (numeric)
+#' @param na_value (numeric)
+#'
+#' @return numeric vector
+#'
+#' @noRd
+#'
+clamp <- function(x, lower, upper, na_value = 0) {
+
+  # reset any NAs to finite
+  x[is.na(x)] <- na_value
+
+  # enforce limits
   x[x > upper] <- upper
   x[x < lower] <- lower
 
   x
+}
+
+
+#' adjust image for contrast, brightness and gamma
+#'
+#' Method as QGIS raster code
+#'
+#' source:
+#' https://github.com/qgis/QGIS/blob/005a0ad0937b24e5a999a2962f473c2fc88032a2/src/core/raster/qgsbrightnesscontrastfilter.cpp
+#'
+#' @param img (raster)
+#' @param a (numeric) alpha component ... per-pixel ... ignored
+#' @param brightness_value (numeric) brightness, [-255 to 255]
+#' @param contrast_value (numeric) contrast, [-100 to 100]
+#' @param gamma_value (numeric) gamma, [0.1 to 10]
+#'
+#' @return (raster) adjusted img
+#'
+#' @noRd
+#'
+adjustColorComponents <- function(
+  img, a = 1, brightness_value = 0, contrast_value = 0, gamma_value = 1
+) {
+
+  # brightness_value: [-255, 255] -> [ -1,  1]
+  # contrast_factor:  [-100, 100] -> [  0,  4]
+  # gamma_factor:     [ 0.1,  10] -> [0.1, 10]
+
+  brightness_value <- brightness_value / 255.0
+  contrast_factor <- ((contrast_value + 100.0) / 100.0) ^ 2
+  gamma_factor <- 1.0 / gamma_value
+
+  apply(
+    img, c(1, 2), adjustColorComponent
+    , a = a
+    , brightness_value = brightness_value
+    , contrast_factor = contrast_factor
+    , gamma_factor = gamma_factor
+  )
+}
+
+
+#' adjust image for contrast, brightness and gamma
+#'
+#' Method as QGIS raster code
+#'
+#' source:
+#' https://github.com/qgis/QGIS/blob/005a0ad0937b24e5a999a2962f473c2fc88032a2/src/core/raster/qgsbrightnesscontrastfilter.cpp
+#'
+#' @param rgb (numeric, possible vector) [0 to 1]
+#' @param a (numeric) alpha component ... per-pixel ... ignored
+#' @param brightness_value (numeric) brightness, [-1 to 1]
+#' @param contrast_factor (numeric) contrast factor, [0 to 4]
+#' @param gamma_factor (numeric) gamma factor, [0.1 to 10]
+#'
+#' @return (raster) adjusted img
+#'
+#' @noRd
+#'
+adjustColorComponent <- function(
+  rgb, a = 1, brightness_value = 0, contrast_factor = 1, gamma_factor = 1
+) {
+
+  if (contrast_factor != 1)
+    rgb <- ((rgb - 0.5) * contrast_factor) + 0.5
+
+  if (brightness_value != 0)
+    rgb <- rgb + brightness_value
+
+  if (gamma_factor != 1)
+    rgb <- rgb ^ gamma_factor
+
+  rgb <- clamp(rgb, 0, 1)
+
+  rgb
 }

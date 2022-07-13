@@ -201,7 +201,6 @@ if (identical(Sys.getenv("NOT_CRAN"), "true")) {
         )
     )
 
->>>>>>> 30c28fe ([R, tests] annotation-map-tile: add invert option)
   })
 
   test_that("annotation_map_tile() does not fail when handed a single point", {

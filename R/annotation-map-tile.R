@@ -237,7 +237,7 @@ GeomMapTile <- ggplot2::ggproto(
       }
     }
 
-    # Brightness, Ccontrast and Gamma
+    # Brightness, Contrast and Gamma
     #
     #
     # brightness_value: -255:255
@@ -257,9 +257,6 @@ GeomMapTile <- ggplot2::ggproto(
     # positive values will increase the amount of contrast.
     #
 
-    #browser()
-
-    # apply brightness, contrast and gamma
     if (!(brightness == 0 && contrast == 0 && gamma == 1)) {
       y2 <- adjustColorComponent(
         matrix(img[, , 1:3], ncol = 3)

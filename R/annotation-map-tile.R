@@ -49,9 +49,16 @@ annotation_map_tile <- function(type = "osm", zoom = NULL, zoomin = -2,
                                 alpha = 1,
                                 brightness = 0, contrast = 0, gamma = 1,
                                 grayscale = FALSE,
-                                invert = TRUE) {
+                                grayscale_method = c("luminosity", "average", "lightness", "saturation"),
+                                invert = FALSE) {
 
   progress <- match.arg(progress)
+  if (grayscale) {
+    grayscale_method <- match.arg(grayscale_method, several.ok = FALSE)
+  } else {
+    grayscale_method <- "none"
+  }
+
   if(!is.null(zoom)) {
     zoomin <- 0
   }
@@ -84,6 +91,7 @@ annotation_map_tile <- function(type = "osm", zoom = NULL, zoomin = -2,
         contrast = contrast,
         gamma = gamma,
         grayscale = grayscale,
+        grayscale_method = grayscale_method,
         invert = invert
       ),
       inherit.aes = FALSE,
@@ -123,9 +131,15 @@ GeomMapTile <- ggplot2::ggproto(
     progress = c("none", "text"), quiet = TRUE, interpolate = TRUE, alpha = 1,
     brightness = 0, contrast = 0, gamma = 1,
     grayscale = FALSE,
-    invert = TRUE
+    grayscale_method = c("luminosity", "average", "lightness", "saturation"),
+    invert = FALSE
   ) {
     progress <- match.arg(progress)
+    if (grayscale) {
+      grayscale_method <- match.arg(grayscale_method, several.ok = FALSE)
+    } else {
+      grayscale_method <- "none"
+    }
 
     coord_crs <- sf::st_crs(panel_params$crs)
     if(!is.null(coord_crs)) {
@@ -268,8 +282,35 @@ GeomMapTile <- ggplot2::ggproto(
     # ref: https://en.wikipedia.org/wiki/Grayscale#Converting_color_to_grayscale
 
     if (grayscale) {
-      b <- c(0.2126, 0.7152, 0.0722)
-      y <- apply(img, c(1, 2), function(x){x[1:3] %*% b})
+
+      if (grayscale_method == "luminosity") {
+
+        y <- matrix(img[, , 1:3], ncol = 3)
+        y <- y %*% c(0.2126, 0.7152, 0.0722)
+        y <- array(y, dim = dim(img)[1:2])
+
+      } else if (grayscale_method == "average") {
+
+        y <- matrix(img[, , 1:3], ncol = 3)
+        y <- y %*% c(1, 1, 1) / 3
+        y <- array(y, dim = dim(img)[1:2])
+
+      } else if (grayscale_method == "lightness") {
+
+        y <- t(matrix(img[, , 1:3], ncol = 3))
+        y <- rgb2hsv(y, maxColorValue = 1L)
+        y <- array(y[3, ], dim = dim(img)[1:2])
+
+      } else if (grayscale_method == "saturation") {
+
+        y <- t(matrix(img[, , 1:3], ncol = 3))
+        y <- rgb2hsv(y, maxColorValue = 1L)
+        y <- array(1 - y[2, ], dim = dim(img)[1:2])
+
+      } else {
+        stop("Unknown greyscale_method specified:", grayscale_method)
+      }
+
       img[, , 1:3] <- y
     }
 

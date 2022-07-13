@@ -25,7 +25,8 @@ annotation_map_tile(
   contrast = 0,
   gamma = 1,
   grayscale = FALSE,
-  invert = TRUE
+  grayscale_method = c("luminosity", "average", "lightness", "saturation"),
+  invert = FALSE
 )
 
 GeomMapTile

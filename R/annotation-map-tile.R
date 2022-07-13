@@ -18,10 +18,15 @@
 #' @param interpolate Passed to [grid::rasterGrob()]
 #' @param alpha Use to make this layer semi-transparent
 #' @param data,mapping Specify data and mapping to use this geom with facets
-#' @param brightness (numeric) [-255 to 255], negative darkens, positive lightens
-#' @param contrast (numeric) [-100 to 100], negative reduces, positive increases
-#' @param gamma (numeric) [0.1 to 10], 1 is identity
-#' @param grayscale (logical) `TRUE` to convert rasters to grayscale (luma601)
+#' @param brightness (numeric) inclusive range (-255 to 255), negative darkens,
+#'   positive lightens
+#' @param contrast (numeric) inclusive range (-100 to 100), negative reduces,
+#'   positive increases
+#' @param gamma (numeric) inclusive range (0.1 to 10), 1 is identity
+#' @param grayscale (logical) `TRUE` to enable grayscale shading
+#' @param grayscale_mode (character) method to enable graysacle shading.
+#'   Includes luminosity (luma601), average (both RGB space) and lightness and
+#'   saturation (hsv space).  Ignored if `grayscale` is `FALSE`.
 #' @param invert (logical) `TRUE` to invert colours
 #'
 #' @return A ggplot2 layer

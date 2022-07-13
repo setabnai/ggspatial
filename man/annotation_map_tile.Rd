@@ -53,15 +53,21 @@ increase the resolution.}
 
 \item{alpha}{Use to make this layer semi-transparent}
 
-\item{brightness}{(numeric) \link{-255 to 255}, negative darkens, positive lightens}
+\item{brightness}{(numeric) inclusive range (-255 to 255), negative darkens,
+positive lightens}
 
-\item{contrast}{(numeric) \link{-100 to 100}, negative reduces, positive increases}
+\item{contrast}{(numeric) inclusive range (-100 to 100), negative reduces,
+positive increases}
 
-\item{gamma}{(numeric) \link{0.1 to 10}, 1 is identity}
+\item{gamma}{(numeric) inclusive range (0.1 to 10), 1 is identity}
 
-\item{grayscale}{(logical) \code{TRUE} to convert rasters to grayscale (luma601)}
+\item{grayscale}{(logical) \code{TRUE} to enable grayscale shading}
 
 \item{invert}{(logical) \code{TRUE} to invert colours}
+
+\item{grayscale_mode}{(character) method to enable graysacle shading.
+Includes luminosity (luma601), average (both RGB space) and lightness and
+saturation (hsv space).  Ignored if \code{grayscale} is \code{FALSE}.}
 }
 \value{
 A ggplot2 layer

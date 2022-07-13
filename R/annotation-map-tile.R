@@ -261,14 +261,13 @@ GeomMapTile <- ggplot2::ggproto(
 
     # apply brightness, contrast and gamma
     if (!(brightness == 0 && contrast == 0 && gamma == 1)) {
-      y2 <- apply(
-        img[, , 1:3], 3,
-        adjustColorComponent,
-        brightness_value = brightness / 255.0,
-        contrast_factor = ((contrast + 100.0) / 100.0) ^ 2,
-        gamma_factor = 1.0 / gamma
+      y2 <- adjustColorComponent(
+        matrix(img[, , 1:3], ncol = 3)
+        , brightness_value = brightness / 255.0
+        , contrast_factor = ((contrast + 100.0) / 100.0) ^ 2
+        , gamma_factor = 1.0 / gamma
       )
-      img[, , 1:3] <- array(y2, dim = c(dim(img)[c(1, 2)], 3))
+      img[, , 1:3] <- array(y2, dim = c(dim(img)[1:2], 3))
     }
 
     # invert colours

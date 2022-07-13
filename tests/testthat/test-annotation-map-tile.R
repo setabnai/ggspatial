@@ -120,33 +120,30 @@ if (identical(Sys.getenv("NOT_CRAN"), "true")) {
         coord_sf(crs = 26910)
     )
 
+    # brightness, contrast and gamma
 
     expect_doppelganger_extra(
       "rgb tile with brightness",
       p +
-        annotation_map_tile(brightness = 32)
+        annotation_map_tile(brightness = 64)
     )
     expect_doppelganger_extra(
       "rgb tile with contrast",
       p +
-        annotation_map_tile(contrast = -25)
+        annotation_map_tile(contrast = -40)
     )
     expect_doppelganger_extra(
       "rgb tile with gamma",
       p +
-        annotation_map_tile(gamma = 2)
+        annotation_map_tile(gamma = 1.2)
     )
     expect_doppelganger_extra(
       "rgb tile with brightness, contrast and gamma",
       p +
-        annotation_map_tile(brightness = 32, contrast = -25, gamma = 2)
-    )
-    expect_doppelganger_extra(
-      "rgb tile with alpha, brightness, contrast and gamma",
-      p +
-        annotation_map_tile(alpha = 0.5, brightness = 32, contrast = -25, gamma = 2)
+        annotation_map_tile(brightness = 64, contrast = -40, gamma = 1.2)
     )
 
+    # grayscale
 
     expect_doppelganger_extra(
       "rgb tile with grayscale",
@@ -154,16 +151,31 @@ if (identical(Sys.getenv("NOT_CRAN"), "true")) {
         annotation_map_tile(grayscale = TRUE)
     )
     expect_doppelganger_extra(
-      "rgb tile with grayscale and alpha",
+      "rgb tile with grayscale - luminosity",
       p +
-        annotation_map_tile(grayscale = TRUE, alpha = 0.5)
+        annotation_map_tile(grayscale = TRUE, grayscale_method = "luminosity")
+    )
+    expect_doppelganger_extra(
+      "rgb tile with grayscale - average",
+      p +
+        annotation_map_tile(grayscale = TRUE, grayscale_method = "average")
+    )
+    expect_doppelganger_extra(
+      "rgb tile with grayscale - lightness",
+      p +
+        annotation_map_tile(grayscale = TRUE, grayscale_method = "lightness")
+    )
+    expect_doppelganger_extra(
+      "rgb tile with grayscale - saturation",
+      p +
+        annotation_map_tile(grayscale = TRUE, grayscale_method = "saturation")
     )
 
     expect_doppelganger_extra(
-      "rgb tile with grayscale, alpha, brightness, contrast and gamma",
+      "rgb tile with brightness, contrast, gamma and grayscale",
       p +
         annotation_map_tile(
-          alpha = 0.5, brightness = 32, contrast = -25, gamma = 2, grayscale = TRUE
+          brightness = 64, contrast = -40, grayscale = TRUE
         )
     )
 
@@ -181,11 +193,10 @@ if (identical(Sys.getenv("NOT_CRAN"), "true")) {
     )
 
     expect_doppelganger_extra(
-      "rgb tile with grayscale, alpha, brightness, contrast and gamma and invert",
+      "rgb tile with brightness, contrast, gamma, grayscale and invert",
       p +
         annotation_map_tile(
-          alpha = 0.8
-          , brightness = 32, contrast = 25, gamma = 0.1
+          brightness = -64, contrast = 40, gamma = 1/1.2
           , grayscale = TRUE, invert = TRUE
         )
     )
